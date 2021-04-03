@@ -1,0 +1,177 @@
+{% extends 'base.html' %} 
+{% load staticfiles %} 
+{% load l10n %} 
+
+{% block head %}
+<script type="text/javascript" src="{% static 'js/cart.js' %}"></script> 
+{% endblock %} 
+
+{% block content %}
+
+<div class="content">
+    <div class="row">
+        <h1>Корзина</h1>
+    </div>
+    <div id="table" class="row">
+        <table class="table table-striped" style="table-layout: fixed;" cellspacing="0" cellpadding="0">
+            <thead>
+                <tr>
+                    <th>Изображение</th>
+                    <th>Наименование</th>
+                    <th>Цена</th>
+                    <th>Кратность</th>
+                    <th>Количество</th>
+                    <th>Ед. изм.</th>
+                    <th>Сумма</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for orderItem in cart.items.all %}
+                <tr id="tr_{{orderItem.product.slug}}">
+                    <th>
+                        <img class="img-rounded" src="/media/{{ orderItem.product.image }}" height="50px" width="50px" />
+                    </th>
+                    <th>
+                        <h5>
+                            <a href="#" data-toggle="popover"  title='<h4>{{ orderItem.product.name }}</h4>' data-html="true"
+                                data-content='
+                        <div>
+                            <img class="img-rounded" src="/media/{{ orderItem.product.image }}" height="100px" width="100px" />
+                        </div>
+                        <div>
+                            {{ orderItem.product.description|safe }}
+                        </div>
+                        <div>
+                            {% for pclass in orderItem.product.product.productClass.all %}
+                                <a href="/itemlist/{{pclass.slug}}" class="btn btn-primary">{{pclass.name}}</a>
+                            {% endfor%}
+                        </div>'>{{ orderItem.product.name }} </a>
+                        </h5>
+                    </th>
+                    <th>
+                        <a data-toggle="popover" title='<h4>Цены</h4>' data-html="true"
+                            data-content='
+                            <div>
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>кол-во</th>
+                                            <th>цена</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for pr in orderItem.product.price_set.all%}
+                                        <tr>
+                                            <th>{{pr.quantity}}</th>
+                                            <th>{{pr.price}} р</th>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>' class="item-price" data-product="{{orderItem.product.slug}}">
+                            {{orderItem.price}}&nbsp;p
+                        </a>
+                    </th>
+                    <th style="text-align: center;">
+                        {{orderItem.product.multiplicity}}
+                    </th>
+                    
+                    <th>
+                        <input type="number" class="form-control item-quantity" id="quantity_{{orderItem.pk}}" value="{{orderItem.quantity}}" min="0"
+                            data-toggle="tooltip" data-placement="top" data-product="{{orderItem.product.slug}}" title='Введите новое количество товара'
+                        />
+                    </th>
+                    <th style="white-space: nowrap;">
+                        {{orderItem.product.product.measure}}
+                    </th>
+                    <th style="text-align: right;">
+                        <span style="white-space: nowrap;" class="item-sum" data-product="{{orderItem.product.slug}}" id="sm_{{orderItem.pk}}">0&nbsp;р</span>
+                    </th>
+                    <!--<th>
+                            <button id="btn_upd_{{orderItem.pk}}" type="button" class="btn btn-success" data-toggle="tooltip" data-placement="top" title="Нажмите кнопку, чтобы изменить количество товаров.">обновить количество
+                            </button>
+                        </th>-->
+                    <th>
+                        <button id="btn_rm_{{orderItem.product.slug}}" data-placement="top" data-product="{{orderItem.product.slug}}" data-type="button"
+                            class="item-del btn btn-danger">
+                            <span class="glyphicon glyphicon-trash"></span>
+                        </button>
+                    </th>
+                </tr>
+                {% endfor %}
+                <tr>
+                    <th></th>
+                    <th>Товаров на сумму:</th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th style="text-align: right;">
+                        <span style="white-space: nowrap;" id="cart-total">0</span>&nbsp;р</th>
+                    <th></th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th>
+                        <a href="#" data-toggle="popover" title='<h4>Цены на доставку</h4>'
+                            data-html="true" data-content='
+                        <div>
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>стоимость товара</th>
+                                        <th>цена доставки</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for delivery in Delivery%}
+                                    <tr>
+                                        <th>{{delivery.minSum}} р</th>
+                                        <th>{% if delivery.price != 0 %} {{delivery.price}}&nbsp;р {% else %} Бесплатно{% endif %}</th>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>' class="item-price" data-product="{{orderItem.product.slug}}">
+                            Доставка:
+                    </a>
+                    </th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th style="text-align: right;">
+                        <span id="delivery-sum">0&nbsp;р</span>
+                    </th>
+                    <th></th>
+                </tr>
+                <tr>
+                    <th></th>
+                    <th>Итого:</th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th style="text-align: right;">
+                        <span style="white-space: nowrap;" id="total">0</span>&nbsp;р</th>
+                    <th></th>
+                </tr>
+                <tbody/>
+        </table>
+    </div>
+    <div class="row">
+        <div class="col-sm-7">
+        </div>
+        <div class="col-sm-5">
+            <span id="ok-span" data-placement="bottom">
+
+                <a id="ok" class="btn btn-success" href="/order" data-placement="left" style="width:100%;">
+                    оформить заказ
+                </a>
+            </span>
+        </div>
+        <div>
+        </div>
+
+{% endblock %}

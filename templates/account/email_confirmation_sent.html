@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block head %}{% trans "Confirm your email address" %}{% endblock %}
+
+{% block content %}
+    <h2>Подтверждение регистрации.</h2>
+    
+    <p>Вам на адрес <b>{{ email }}</b> отправлено письмо для подтверждения регистрации. Перейдите по ссылке в нем для окончания регистрации. Если вам письмо не пришло в течении нескольких минут, напишите на адрес <a href="mailto:{{ THEME_CONTACT_EMAIL }}">{{ THEME_CONTACT_EMAIL }}</a>.</p>
+    <p><a href="{{ success_url }}">Назад.</a></p>
+{% endblock %}

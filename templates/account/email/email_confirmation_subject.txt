@@ -1,0 +1,1 @@
+Подтверждение email для {{current_site.name}}

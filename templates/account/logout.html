@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block head %}{% trans "Log out" %}{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-5">
+            <form method="POST" action="{% url "account_logout" %}">
+                <legend>Выход</legend>
+                <fieldset>
+                    {% csrf_token %}
+                    <p>Вы уверены, что хотите выйти</p>
+                    <button type="submit" class="btn btn-primary">Выйти</button>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+{% endblock %}

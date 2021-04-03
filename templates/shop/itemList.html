@@ -1,0 +1,282 @@
+{% extends 'base.html' %} {% load staticfiles %} {% load l10n %} {% block head %}
+<script type="text/javascript" src="{% static 'js/itemList.js' %}"></script>
+<script>
+    $(document).ready(function () {
+        $("#nav_homepage").attr("class", "active");
+        {% for tag in productClasses %}
+        {% if tag.available %}
+        $("#search_{{tag.slug}}").on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("#tbody_{{tag.slug}} tr").filter(function () {
+                $(this).toggle(
+                    $(this).attr("data-search-keywords").toLowerCase().indexOf(value) > - 1
+                );
+            });
+        });
+        {% endif %}
+        {% endfor %}
+
+        {% if item != '' %}
+        $('#modal_{{curitem}}').modal();
+        {% endif %}
+    });
+</script> 
+{% endblock %} 
+{% block content %}
+<div class="row">
+
+    <ul class="nav nav-tabs">
+        {% for tag in productClasses %} 
+        {% if tag.available %}
+        <li {% if tag.slug == cls %}class="active" {% endif %}>
+            <a data-toggle="tab" href="#{{tag.slug}}">
+                {{ tag.name }}
+                <!--<span class="badge">{{ tag.product_set.all|length }}</span>-->
+            </a>
+        </li>
+        {% endif %} 
+        {% endfor %}
+    </ul>
+    <div class="tab-content">
+        {% for tag in productClasses %} 
+        {% if tag.available %}
+        <div id="{{ tag.slug }}" {% if tag.slug == cls %} class="tab-pane fade in active" {% else %} class="tab-pane fade" {% endif %}>
+            <p>
+                <input style="margin-top:10px;" class="form-control" id="search_{{tag.slug}}" type="text" placeholder="Поиск..">
+            </p>
+            <div class="table-responsive">
+                <table class="table tablesaw tablesaw-stack" data-tablesaw-mode="stack" style="table-layout: fixed;" cellspacing="0" cellpadding="0">
+                    <thead>
+                        <tr>
+                            <th width="10%" style="text-align: center;">Изображение</th>
+                            <th width="20%" style="text-align: center;">Наименование</th>
+                            <th width="15%" style="text-align: center;">Вариант</th>
+                            <th width="10%" style="text-align: center;">Цена</th>
+                            <th width="10%" style="text-align: center;">Кратность</th>
+                            <!--<th>на&nbsp;складе</th>-->
+                            <th width="15%" style="text-align: center;">Количество</th>
+                            <th width="5%" style="text-align: center;">Ед.&nbsp;изм.</th>
+                            <th width="20%" style="text-align: center;">Сумма</th>
+                            <th width="10%" style="text-align: center;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody_{{tag.slug}}">
+                        {% for product in tag.product_set.all %} 
+                        {% if product.available %}
+                        <tr data-search-keywords="{{product.name}}:{{product.slug}}:{% for item in product.productvariant_set.all %}{{item.addition}}:{% endfor %}">
+                            <td>
+                                <img class="img-rounded" src="/media/{{ product.image }}" alt="{{product.slug}}" height="70px" width="70px" />
+                            </td>
+                            <td>
+                                <h5>
+                                    <a tabindex="0" role="button" href="#" id="a_modal_{{product.slug}}"
+                                    data-toggle="modal" data-target="#modal_{{product.slug}}">
+                                        {{ product.name }}
+                                    </a>
+                                </h5>
+                            </td>
+                            <td>
+                                <select class="form-control variant-selector" data-tag="{{tag.slug}}" data-product="{{product.slug}}" id="selection_{{ product.slug }}_{{tag.slug}}">
+                                    {% for item in product.productvariant_set.all %} {% if item.available %}
+                                    <option value="{{item.slug}}" id="option_{{item.slug}}_{{tag.slug}}">{{item.addition}}</option>
+                                    {% endif %} {% endfor %}
+                                </select>
+                            </td>
+                            <td style="text-align: right;">
+                                <a  tabindex="0" href="#" data-tag="{{tag.slug}}" data-product="{{product.slug}}" data-toggle="popover" title='<h4>Цены</h4>' style="white-space: nowrap;" data-trigger="hover"
+                                    data-html="true" class="item-price">
+                                    ?
+                                </a>
+                            </td>
+                            <td style="text-align: right;">
+                                <span  tabindex="0" href="#" data-tag="{{tag.slug}}" data-product="{{product.slug}}" style="white-space: nowrap;"
+                                     class="item-multiplicity">
+                                    ?
+                                </span>
+                            </td>
+                            <!--<th>
+                                <span style="white-space: nowrap;" data-tag="{{tag.slug}}" data-product="{{product.slug}}" class="item-count">
+                                    ?
+                                </span>
+                            </th>-->
+                            <td>
+                                <input type="number" class="form-control quantity-selector" data-tag="{{tag.slug}}" data-product="{{product.slug}}" id="quantity_{{product.slug}}_{{tag.slug}}"
+                                    value="0" min="0" />
+                            </td>
+                            <td style="white-space: nowrap;">
+                                {{product.measure}}
+                            </td>
+                            <td style="text-align: right;">
+                                <span data-tag="{{tag.slug}}" style="white-space: nowrap;" data-product="{{product.slug}}" class="product-sum" id="sm_{{ product.slug }}_{{tag.slug}}">0&nbsp;р</span>
+                            </td>
+                            <td>
+                                <button data-tag="{{tag.slug}}" data-content="" data-placement="top" data-product="{{product.slug}}" id="btn_{{ product.slug }}_{{tag.slug}}"
+                                    type="button" class="btn btn-success btn-add-cart"> В корзину
+                                </button>
+                            </td>
+                        </tr>
+                        {% endif %} 
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+        </div>
+        {% for product in tag.product_set.all %} 
+            {% if product.available %}
+                <div id="modal_{{product.slug}}" class="modal fade" role="dialog">
+                    <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h3 class="modal-title">{{ product.name }}</h3>
+                        </div>
+                        <div class="modal-body">
+                                <div width="300px">
+                                    {% if product.carouselimage_set.all %}
+                                    <!--<img class="img-rounded" src="/media/{{ product.image }}" height="200px" width="200px"/>-->
+                                        
+                                        <div id="carousel_{{product.slug}}" class="carousel slide" data-ride="carousel">
+                                            <ol class="carousel-indicators">
+                                                {% for carouselImage in product.carouselimage_set.all %}
+                                                    <li data-target="#carousel_{{product.slug}}" style="background-color: black;" data-slide-to="{{forloop.counter0}}"
+                                                    {% if forloop.first %} class="active"{% endif %}>
+                                                    </li>
+                                                {% endfor %}
+                                            
+                                            </ol>
+
+                                            <div class="carousel-inner" role="listbox">
+                                                {% for carouselImage in product.carouselimage_set.all %}
+                                                    <div class="item {% if forloop.first %} active {% endif %}">
+                                                        <img class="d-block w-100" src="/media/{{ carouselImage.image }}" alt="" style="margin: auto;">
+                                                        <div class="carousel-caption  d-none d-md-block">
+                                                            {{ carouselImage.description|safe }}
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+
+                                            <a class="left carousel-control" href="#carousel_{{product.slug}}" style="color: black;" data-slide="prev">
+                                                <span class="glyphicon glyphicon-chevron-left"></span>
+                                                <span class="sr-only">Previous</span>
+                                            </a>
+                                            <a class="right carousel-control" href="#carousel_{{product.slug}}" style="color: black;" data-slide="next">
+                                                <span class="glyphicon glyphicon-chevron-right"></span>
+                                                <span class="sr-only">Next</span>
+                                            </a>
+                                        </div>
+                                    {% else %}
+                                        <div id="carousel_{{product.slug}}" class="carousel slide" data-ride="carousel">
+                                            <ol class="carousel-indicators">
+                                                    <li data-target="#carousel_{{product.slug}}" style="background-color: black;" data-slide-to="0"
+                                                    class="active">
+                                                    </li>
+                                            </ol>
+
+                                            <div class="carousel-inner" role="listbox">
+                                                    <div class="item active">
+                                                        <img class="d-block w-100" src="/media/{{ product.image }}" alt="" style="margin: auto;">
+                                                        <div class="carousel-caption  d-none d-md-block">
+                                                            {{ carouselImage.description|safe }}
+                                                        </div>
+                                                    </div>
+                                            </div>
+
+                                            <a class="left carousel-control" href="#carousel_{{product.slug}}" style="color: black;" data-slide="prev">
+                                                <span class="glyphicon glyphicon-chevron-left"></span>
+                                                <span class="sr-only">Previous</span>
+                                            </a>
+                                            <a class="right carousel-control" href="#carousel_{{product.slug}}" style="color: black;" data-slide="next">
+                                                <span class="glyphicon glyphicon-chevron-right"></span>
+                                                <span class="sr-only">Next</span>
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <div style="margin-top: 20px">
+                                    {{ product.description|safe }}
+                                </div>
+                                <div style="margin-top: 20px">
+                                    <h4>Варианты:</h4>
+                                    <table  class="table table-striped" style="table-layout: fixed;" cellspacing="0" cellpadding="0">
+                                        <tr>
+                                            <th  width="20%" style="text-align: center;">
+                                                Изображение
+                                            </th>
+                                            <th  width="20%" style="text-align: center;">
+                                                Вариант
+                                            </th>
+                                            <th  width="20%" style="text-align: center;">
+                                                Артикул
+                                            </th>
+                                            <th colspan="2" width="40%" style="text-align: center;">
+                                                Цены
+                                            </th>
+                                            
+                                            <!--<th  width="20%" style="text-align: center;">
+                                                Количество
+                                            </th>
+                                            <th  width="20%" style="text-align: center;">
+                                                Ед. изм.
+                                            </th>
+                                            <th  width="20%" style="text-align: center;">
+                                                Сумма
+                                            </th>
+                                            <th  width="10%" style="text-align: center;">
+                                               
+                                            </th>-->
+                                        </tr>
+                                        {% for item in product.productvariant_set.all %}
+                                        {% if item.available %}
+                                        <tr>
+                                            <td style="text-align: center;">
+                                                <img class="img-rounded" src="/media/{{ item.image }}" alt="{{item.slug}}" height="70px" width="70px" />
+                                            </td>
+                                            <td style="text-align: center;">{{ item.addition }}</td>
+                                            <td style="text-align: center;">{{ item.vendorCode }}</td>
+                                            <td colspan="2" style="text-align: center;">
+                                                <a href="#" class="btn btn-info" data-toggle="collapse" data-target=".modal_{{item.slug}}_price">
+                                                        <span class="glyphicon glyphicon-chevron-down"></span> показать/скрыть цены 
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        {% for price in item.price_set.all%}
+                                            <tr class="modal_{{item.slug}}_price collapse">
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td style="text-align: right;">от {{price.quantity}}&thinsp;{{product.measure}}</td>
+                                                    <td style="text-align: right;">{{price.price|floatformat:2|localize}}&thinsp;р. за {{product.measure}}</td>
+                                            </tr>
+                                        {% endfor %}
+                                        {% endif %}
+                                        {% endfor %}
+                                    </table>
+                                </div>
+                                <hr/>
+                                <div>
+                                    {% for pclass in product.productClass.all %}
+                                        {% if pclass.available %}
+                                            <a href="/itemlist/{{pclass.slug}}" class="label label-primary">{{pclass.name}}</a>
+                                        {% endif %}
+                                    {% endfor%}
+                                </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Закрыть</button>
+                        </div>
+                    </div>
+                
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+
+        {% endif %} 
+        {% endfor %}
+
+    </div>
+</div>
+
+{% endblock %}

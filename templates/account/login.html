@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% load account_tags %}
+{% load i18n %}
+{% load filters %}
+
+{% block head %}
+<title>Вход</title>
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-4">
+            <form method="POST" action="{% url "account_login" %}" autocapitalize="off" {% if form.is_multipart %} enctype="multipart/form-data"{% endif %}>
+                <legend>Войти</legend>
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+                <div class="form-group">
+                    {{ form.email.errors }}
+                    <label for="{{ form.email.id_for_label }}">Адрес электронной почты:</label>
+                    {{ form.email|addclass:"form-control"}}
+                </div>
+               <div class="form-group">
+                    {{ form.password.errors }}
+                    <label for="{{ form.password.id_for_label }}">Пароль:</label>
+                    {{ form.password|addclass:"form-control"}}
+                </div>
+                <div class="form-group">
+                    {{ form.remember.errors }}
+                    <label for="{{ form.remember.id_for_label }}">Запомнить меня:</label>
+                    {{ form.remember}}
+                </div>
+
+                {% if redirect_field_value %}
+                    <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                {% endif %}
+                <button type="submit" class="btn btn-primary">Вход</button>
+                <p>
+                    <a href="{% url "account_password_reset" %}" class="btn btn-link">Забыли пароль?</a>
+                </p>
+            </form>
+            {% if ACCOUNT_OPEN_SIGNUP %}
+                <p class="login-signup">
+                    <small>
+                        Не зарегистрированы?  <strong><a href="{% urlnext 'account_signup' %}">Регистрация</a></strong>
+                    </small>
+                </p>
+            {% endif %}
+        </div>
+        <div class="col-md-4">
+            
+        </div>
+    </div>
+{% endblock %}

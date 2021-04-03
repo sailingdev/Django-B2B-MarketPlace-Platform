@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block head_title %}{% trans "Email confirmed" %}{% endblock %}
+
+{% block body %}
+    <h1>Эл. почта подтверждена.</h1>
+    <p>Вы подтвердили эл. почту <b>{{ confirmation.email_address.email }}</b></p>
+{% endblock %}

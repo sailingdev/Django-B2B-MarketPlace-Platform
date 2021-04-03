@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+
+<body>
+    <div>
+        <h2>{{ current_site.name }}</h2>
+    </div>
+    <div>
+        <p>Добрый день!</p>
+        <p>Спасибо за покупку магазине {{ current_site.name }}. Вы можете найти все свои заказы и отслеживать их статус на странице
+            <a href="http://{{ current_site.domain }}/myorders/">"мои заказы" </a>
+        </p>
+
+        <p>C уважением,</p>
+        <p>{{ current_site.name }}</p>
+    </div>
+</body>
+
+</html>

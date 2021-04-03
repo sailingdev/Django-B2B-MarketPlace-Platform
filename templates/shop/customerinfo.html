@@ -1,0 +1,235 @@
+{% extends 'base.html' %} {% load staticfiles %} {% load l10n %} {% block head %}
+<link href="https://cdn.jsdelivr.net/npm/suggestions-jquery@17.10.1/dist/css/suggestions.min.css" type="text/css" rel="stylesheet"
+/>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/suggestions-jquery@17.10.1/dist/js/jquery.suggestions.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#nav_cart").attr("class", "active");
+    });
+</script>
+<script type="text/javascript">
+    var API_KEY_DADATA = "{{ DADATA_API_KEY }}";
+
+    $(document).ready(function () {
+        $("#nav_cart").attr("class", "active");
+        updateCartSum(function () {
+            $("#cart-total").text(normalize(cartSum));
+        });
+
+        $("#party").suggestions({
+            token: API_KEY_DADATA,
+            type: "PARTY",
+            count: 5,
+            onSelect: function (suggestion) {
+                console.log(suggestion);
+                var data = suggestion.data;
+                if (!data) {
+                    return;
+                }
+
+                if (data.name.full_with_opf) {
+                    $("#name").val(data.name.full_with_opf);
+                }
+
+                $("#inn").val(data.inn);
+                $("#kpp").val(data.kpp);
+
+                if (data.address.data.source) {
+                    $("#address").val(data.address.data.source);
+                    //$("#shipping_address").val(data.address.data.source);
+                }
+            }
+        });
+
+        $("#shipping_address").suggestions({
+            token: API_KEY_DADATA,
+            type: "ADDRESS",
+            count: 5,
+            onSelect: function (suggestion) {
+                //console.log(suggestion.value);
+            }
+        });
+
+        $("#face").suggestions({
+            token: API_KEY_DADATA,
+            type: "NAME",
+            count: 5,
+            onSelect: function (suggestion) {
+            }
+        });
+
+        $("#personRecipient").suggestions({
+            token: API_KEY_DADATA,
+            type: "NAME",
+            count: 5,
+            onSelect: function (suggestion) {
+            }
+        });
+
+
+        $('[data-toggle="popover"]').popover({ trigger: "hover" });
+    });
+</script> 
+{% endblock %} 
+{% block content %}
+<div class="content">
+    <div class="row">
+        <h1>Оформление заказа</h1>
+    </div>
+    <div class="row">
+        <div id="table" class="row">
+            <h2>Шаг 1. Проверте правильность заказа.</h2>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th style="text-align: center;" width="15%">Изображение</th>
+                        <th style="text-align: center;" width="30%">Наименование</th>
+                        <th style="text-align: center;" width="15%">цена</th>
+                        <th style="text-align: center;" width="15%">количество</th>
+                        <th style="text-align: center;" width="10%"></th>
+                        <th style="text-align: center;" width="15%">сумма</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for orderItem in cart.items.all %}
+                    <tr id="tr_{{orderItem.product.slug}}">
+                        <th style="text-align: center;">
+                            <img class="img-rounded" src="/media/{{ orderItem.product.image }}" height="50px" width="50px" />
+                        </th>
+                        <th style="text-align: center;">
+                            <h5>
+                                <a data-toggle="popover" title="{{ orderItem.product.name }}" data-html="true"
+                                    data-content="
+                        <div>
+                            <img class='img-rounded' src='/media/{{ orderItem.product.image }}' height='100px' width='100px' />
+                        </div>
+                        <div>
+                            {{ orderItem.product.description|safe }}
+                        </div>
+                        <div>
+                            {% for pclass in orderItem.product.product.productClass.all %}
+                                <a href='/itemlist/{{pclass.slug}}' class='btn btn-primary'>{{pclass.name}}</a>
+                            {% endfor%}
+                        </div>">{{ orderItem.product.name }} </a>
+                            </h5>
+                        </th>
+                        <th style="white-space: nowrap; text-align: right;">
+                            {{orderItem.price}} p
+                        </th>
+                        <th style="text-align: right;">
+                            <span style="white-space: nowrap;" id="quantity_{{orderItem.pk}}">{{orderItem.quantity}}</span>
+                        </th>
+                        <th style="text-align: left;">
+                            <span style="white-space: nowrap;">{{orderItem.product.product.measure}}</span>
+                        </th>
+                        <th style="text-align: right;">
+                            <span style="white-space: nowrap;" id="sm_{{orderItem.pk}}"> {{ orderItem.getSum }} </span> p
+                        </th>
+                    </tr>
+                    {% endfor %}
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th style="text-align: right;">Товаров на сумму:</th>
+                        <th style="text-align: right;">
+                            <span style="white-space: nowrap;" id="cart-total">{{cart.getTotalSum}}</span> р</th>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th style="text-align: right;">Доставка:</th>
+                        <th style="text-align: right;">
+                            <span id="delivery-sum">{{cart.getDelivery}}</span> р</th>
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                        <th style="text-align: right;">Итого:</th>
+                        <th style="text-align: right;">
+                            <span style="white-space: nowrap;" id="total">{{total}}</span> р</th>
+
+                    </tr>
+                    <tbody/>
+            </table>
+        </div>
+    </div>
+    <form action="/order/" method="post">
+        {% csrf_token %}
+        <div class="row">
+            <h2>Шаг 2. Заполните сведения о покупателе.</h2>
+            <div class="row">
+                <input type="text" name="party" class="form-control" id="party" placeholder="Введите название или ИНН организации для автоматического заполнения сведений"
+                />
+            </div>
+            <div class="row">
+                <label for="name">Покупатель:</label>
+                <input name="name" type="text" class="form-control" id="name" placeholder="Например, ИП Иванов Иван Иванович." required/>
+            </div>
+            <div class="row">
+                <label for="address">Адрес:</label>
+                <input name="address" type="text" class="form-control" id="address" placeholder="123456 Москва ул. Какая-то д. 123, кв. 123"
+                required/>
+            </div>
+            <div class="row">
+                <label for="inn">ИНН:</label>
+                <input name="inn" type="text" class="form-control" id="inn" placeholder="1234567890" required/>
+            </div>
+            <div class="row">
+                <label for="kpp">КПП:</label>
+                <input name="kpp" type="text" class="form-control" id="kpp" placeholder="1234567890" required/>
+            </div>
+            <div class="row">
+                <label for="face">Ответственное лицо:</label>
+                <input type="text" name="face" class="form-control" id="face" rows="10" cols="50" required></input>
+            </div>
+            <div class="row">
+                <label for="facePhone">Телефон:</label>
+                <input type="tel" name="facePhone" class="form-control"
+                id="facePhone" rows="10" cols="50" placeholder="+7 (123) 456-7890" required></input>
+            </div>
+        </div>
+        <div class="row">
+            <h2>Шаг 3. Укажите адрес доставки и комментарии к заказу.</h2>
+            <div class="row">
+                <label for="personRecipient">Получатель:</label>
+                <input type="text" name="personRecipient" class="form-control" id="personRecipient" rows="10" cols="50" required></input>
+            </div>
+            <div class="row">
+                <label for="personRecipientPhone" required>Телефон:</label>
+                <input type="tel" name="personRecipientPhone" class="form-control" 
+                id="personRecipientPhone" rows="10" cols="50" placeholder="+7 (123) 456-7890" required></input>
+            </div>
+            <div class="row">
+                <label for="shipping_address">Адрес доставки:</label>
+                <input name="shipping_address" type="text" class="form-control" id="shipping_address" placeholder="" required/>
+            </div>
+            <div class="row">
+                <label for="comments">Комментарии к заказу:</label>
+                <textarea name="comments" class="form-control" id="comments" rows="10" cols="50"></textarea>
+            </div>
+
+        </div>
+        <div style="margin-top: 20px;margin-bottom: 20px;" class="row">
+            <div class="col-sm-9">
+            </div>
+            <div class="col-sm-1">
+                <a id="back" class="btn btn-danger" href="/cart" style="width:100%;">
+                    назад
+                </a>
+            </div>
+            <div class="col-sm-2">
+                <button id="submit" class="btn btn-success" name="submit" style="width:100%;">
+                    Далее
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+    {% endblock %}

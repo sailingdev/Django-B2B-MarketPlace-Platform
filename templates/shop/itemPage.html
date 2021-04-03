@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block head %}
+{% endblock %}
+
+{% block content %}
+<div>
+    <h3>{{ item.name }}</h3>
+    <img src="/media/{{ item.image }}" height="100px" width="100px" />
+</div>
+<div>
+   <p> {{ item.description|safe }}</p>
+</div>
+<div>
+   <h5>относится к</h5>
+   <ul>
+    {% for pclass in item.productClass.all %}
+        <li>{{pclass.name}}</li>
+    {% endfor%}
+   </ul>
+</div>
+<div>
+    <h5>варианты</h5>
+    <ul>
+        {% for pvar in item.productvariant_set.all %}
+            <li>
+                <div>
+                    {{pvar.name}}
+                </div>
+                <div>
+                    {{pvar.addition}}
+                </div>
+                <div>
+                    цена: {{pvar.price}}
+                </div>
+            </li>
+        {% endfor%}
+    </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,74 @@
+{% extends 'admin/base_site.html' %}
+{% load filters %}
+
+{% block title %}Update quantity{% endblock %}
+
+{% block content %}
+{% if form %}
+<h2>Обновление номенклатуры.</h2>
+<p>
+    Загрузите файл в формате xls с номенклатурой.
+</p>
+<form action="/admin/admin_update_quantities/" enctype="multipart/form-data" method="post">
+    {% csrf_token %}
+    {{ form }}
+    <input type="submit" value="Submit" />
+</form>
+{% else %}
+<h2>Обновление номенклатуры.</h2>
+<div class="row">
+    <a href="/admin/shop/productvariant/">Перейти к таблице продуктов.</a>
+</div>
+<div class="row">
+    <h3>Обновлены</h3>
+    <table>
+        <tr>
+            <th>Название в БД</th>
+            <th>Название в файле</th>
+            <th>Артикул</th>
+            <th>Новое количество</th>
+            <th>Количество в файле</th>
+        </tr>
+        {% for item in updated %}
+            <tr>
+                <td>
+                    {{ item|getByKey:"name_in_db" }}
+                </td>
+                <td>
+                    {{ item|getByKey:"name_in_file" }}
+                </td>
+                <td>
+                    {{ item|getByKey:"vendorCode" }}
+                </td>
+                <td>
+                    {{ item|getByKey:"new_quantity" }}
+                </td>
+                <td>
+                    {{ item|getByKey:"quantity_in_file" }}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+<div class="row">
+    <h3>Не найдены</h3>
+    <table>
+        <tr>
+            <th>Название в файле</th>
+            <th>Артикул</th>
+        </tr>
+        {% for item in errors %}
+            <tr>
+                <td>
+                    {{ item|getByKey:"name_in_file" }}
+                </td>
+                <td>
+                    {{ item|getByKey:"vendorCode" }}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endif %}
+{% endblock %}

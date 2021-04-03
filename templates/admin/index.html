@@ -1,0 +1,22 @@
+{% extends "admin/index.html" %}
+
+{% comment %}
+{% block extrastyle %}
+    {{ block.super }}
+{% endblock %}
+{% endcomment %}
+
+{% block content %}
+    <div class="module">
+       <table>
+       <caption>
+           <a href="#" class="section" title="">Номенклатура</a>
+       </caption>
+           <tr>
+               <th scope="row"> <a href="/admin/admin_update_quantities/" >Обновить</a></th>
+           </tr>
+       </table>
+       </div>
+
+    {{ block.super }}
+{% endblock %}

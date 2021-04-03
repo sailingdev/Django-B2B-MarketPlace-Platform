@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% load l10n %}
+
+{% block head %}
+<script>
+$(document).ready(function() {
+    $("#nav_myorders").attr("class", "active");
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<h1>
+    Заказы
+</h1>
+<div class="row">
+    <table class="table table-striped">
+        <tr>
+            <th>Счет&nbsp;№</th>
+            <th>Дата</th>
+            <th>Состояние</th>
+            <th>Трек номер</th>
+            <th>Покупатель</th>
+            <th>Продавец</th>
+            <th>Сумма</th>
+            <th><th>
+        </tr>
+        {% for invoice in invoices %}
+        <tr>
+            <td>
+                {{invoice.pk}}
+            </td>
+            <td>
+                {{invoice.date|date:"DATE_FORMAT"}}
+            </td>
+            <td>
+                <strong>
+                    {% if invoice.order.status %}
+                    <center>
+                        <span style="color: {{invoice.order.status.color}};"> {{invoice.order.status.name}} </span>
+                    </center>
+                    {% endif %}
+                </strogn>
+            </td>
+            <td>
+                {% if invoice.trackNumber %}
+                    <span> {{invoice.trackNumber}} </span>
+                {% else %}
+                    <center>
+                        -
+                    </center>
+                {% endif %}
+            </td>
+            <td>
+                {{invoice.customer.name}}
+            </td>
+            <td>
+                {{invoice.seller.name}}
+            </td>
+            <td>
+                {{invoice.toPay|floatformat:2|localize}}&nbsp;р
+            </td>
+
+            <td>
+                <a type="button" class="btn btn-default" href="/getinvoicepdf?pk={{invoice.pk}}" target="_blank">
+                    <span class="glyphicon glyphicon-file"></span>Скачать счет
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+
+{% endblock %}

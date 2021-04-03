@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block head %}<title>Подтверждение регистрации</title>{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-5">
+            <form method="post" action="{% url "account_confirm_email" key=confirmation.key %}">
+                <legend>Подтверждение регистрацию</legend>
+                <fieldset>
+                    {% csrf_token %}
+                    <p>Подтвердите эл. почту <b>{{ confirmation.email_address.email }}</b>?</p>
+                    <button type="submit" class="btn btn-primary">Подтвердить</button>
+                </fieldset>
+            </form>
+        </div>
+    </div>
+{% endblock %}
